@@ -21,10 +21,6 @@
     </style>
 </head>
 <script>
-window.onorientationchange = function() {
-    window.location.reload();
-}
-
 function BlockDefaults(event) {
     event.preventDefault();
 }
@@ -38,15 +34,42 @@ function BlockDefaults(event) {
         <br>
         <br>
         <center>
-            <div style="color: #ffaaaa; font-size: 1.2em; font-family: monospace">
+            <div style="color: #ffaaaa; font-size: 32px; font-family: monospace">
                 Turn your phone sideways, please.
             </div>
         </center>
     </div>
 <script>
-if(window.innerHeight > window.innerWidth) {
-    document.getElementById("screen").style.display = "none";
-    document.getElementById("portrait").style.display = "block";
+var isMobile = {
+    Android: function() {
+        return navigator.userAgent.match(/Android/i);
+    },
+    BlackBerry: function() {
+        return navigator.userAgent.match(/BlackBerry/i);
+    },
+    iOS: function() {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+    },
+    Opera: function() {
+        return navigator.userAgent.match(/Opera Mini/i);
+    },
+    Windows: function() {
+        return navigator.userAgent.match(/IEMobile/i);
+    },
+    any: function() {
+        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
+    }
+};
+
+if(isMobile.any()) {
+    window.onorientationchange = function() {
+        window.location.reload();
+    }
+
+    if(window.innerHeight > window.innerWidth) {
+        document.getElementById("screen").style.display = "none";
+        document.getElementById("portrait").style.display = "block";
+    }
 }
 </script>
 </body>
