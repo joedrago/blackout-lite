@@ -21,6 +21,10 @@
     </style>
 </head>
 <script>
+window.onorientationchange = function() {
+    window.location.reload();
+}
+
 function BlockDefaults(event) {
     event.preventDefault();
 }
@@ -35,7 +39,7 @@ function BlockDefaults(event) {
         <br>
         <center>
             <div style="color: #ffaaaa; font-size: 1.2em; font-family: monospace">
-                Please close this window and reopen with the phone in landscape (sideways).
+                Turn your phone sideways, please.
             </div>
         </center>
     </div>
