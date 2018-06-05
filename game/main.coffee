@@ -151,6 +151,7 @@ class NativeApp
         @game.touchDown(touch.clientX, touch.clientY)
 
   onTouchMove: (evt) ->
+    evt.preventDefault()
     touches = evt.changedTouches
     for touch in touches
       if @touchMouse == touch.identifier
