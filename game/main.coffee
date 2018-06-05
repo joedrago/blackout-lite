@@ -17,6 +17,7 @@ class NativeApp
   constructor: (@screen, @width, @height) ->
     @tintedTextureCache = []
     @lastTime = new Date().getTime()
+    @heardOneTouch = false
     @touchMouse = null
     window.addEventListener 'mousedown',  @onMouseDown.bind(this), false
     window.addEventListener 'mousemove',  @onMouseMove.bind(this), false
@@ -141,6 +142,7 @@ class NativeApp
     requestAnimationFrame => @update()
 
   onTouchStart: (evt) ->
+    @heardOneTouch = true
     touches = evt.changedTouches
     for touch in touches
       if @touchMouse == null
@@ -164,12 +166,18 @@ class NativeApp
       @touchMouse = null
 
   onMouseDown: (evt) ->
+    if @heardOneTouch
+      return
     @game.touchDown(evt.clientX, evt.clientY)
 
   onMouseMove: (evt) ->
+    if @heardOneTouch
+      return
     @game.touchMove(evt.clientX, evt.clientY)
 
   onMouseUp: (evt) ->
+    if @heardOneTouch
+      return
     @game.touchUp(evt.clientX, evt.clientY)
 
 screen = document.getElementById 'screen'
