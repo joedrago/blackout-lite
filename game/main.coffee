@@ -15,12 +15,15 @@ SAVE_TIMER_MS = 3000
 
 class NativeApp
   constructor: (@screen, @width, @height) ->
-    @rgbkCache = []
     @tintedTextureCache = []
     @lastTime = new Date().getTime()
-    window.addEventListener 'mousedown', @onMouseDown.bind(this), false
-    window.addEventListener 'mousemove', @onMouseMove.bind(this), false
-    window.addEventListener 'mouseup',   @onMouseUp.bind(this), false
+    @touchMouse = null
+    window.addEventListener 'mousedown',  @onMouseDown.bind(this), false
+    window.addEventListener 'mousemove',  @onMouseMove.bind(this), false
+    window.addEventListener 'mouseup',    @onMouseUp.bind(this), false
+    window.addEventListener 'touchstart', @onTouchStart.bind(this), false
+    window.addEventListener 'touchmove',  @onTouchMove.bind(this), false
+    window.addEventListener 'touchend',   @onTouchEnd.bind(this), false
     @context = @screen.getContext("2d")
     @textures = [
       # all card art
@@ -74,48 +77,6 @@ class NativeApp
       # console.log "saving: #{state}"
       localStorage.setItem "state", state
 
-  # from http://www.playmycode.com/blog/2011/06/realtime-image-tinting-on-html5-canvas/
-  generateRGBKs: (img) ->
-    w = img.width
-    h = img.height
-    rgbks = []
-
-    canvas = document.createElement "canvas"
-    canvas.width = w
-    canvas.height = h
-
-    ctx = canvas.getContext "2d"
-    ctx.drawImage img, 0, 0
-
-    pixels = ctx.getImageData(0, 0, w, h).data
-
-    # 4 is used to ask for 3 images: red, green, blue and
-    # black in that order.
-    for rgbI in [0...4]
-      canvas = document.createElement("canvas")
-      canvas.width  = w
-      canvas.height = h
-
-      ctx = canvas.getContext('2d')
-      ctx.drawImage img, 0, 0
-      to = ctx.getImageData 0, 0, w, h
-      toData = to.data
-
-      for i in [0...pixels.length] by 4
-        toData[i  ] = if (rgbI == 0) then pixels[i  ] else 0
-        toData[i+1] = if (rgbI == 1) then pixels[i+1] else 0
-        toData[i+2] = if (rgbI == 2) then pixels[i+2] else 0
-        toData[i+3] =                     pixels[i+3]
-
-      ctx.putImageData to, 0, 0
-
-      # image is _slightly_ faster than canvas for this, so convert
-      imgComp = new Image()
-      imgComp.src = canvas.toDataURL()
-      rgbks.push imgComp
-
-    return rgbks
-
   generateTintImage: (textureIndex, red, green, blue) ->
     img = @textures[textureIndex]
     buff = document.createElement "canvas"
@@ -134,38 +95,6 @@ class NativeApp
     ctx.globalAlpha = 1.0
     ctx.globalCompositeOperation = 'destination-in'
     ctx.drawImage(img, 0, 0)
-
-    imgComp = new Image()
-    imgComp.src = buff.toDataURL()
-    return imgComp
-
-  generateTintImage2: (textureIndex, red, green, blue) ->
-    img = @textures[textureIndex]
-    rgbks = @rgbkCache[textureIndex]
-    if not rgbks
-      rgbks = @generateRGBKs(img)
-      @rgbkCache[textureIndex] = rgbks
-      # console.log "generated RGBKs for #{textureIndex}"
-
-    buff = document.createElement "canvas"
-    buff.width  = img.width
-    buff.height = img.height
-
-    ctx = buff.getContext "2d"
-    ctx.globalAlpha = 1
-    ctx.globalCompositeOperation = 'copy'
-    ctx.drawImage rgbks[3], 0, 0
-
-    ctx.globalCompositeOperation = 'lighter'
-    if red > 0
-      ctx.globalAlpha = red
-      ctx.drawImage rgbks[0], 0, 0
-    if green > 0
-      ctx.globalAlpha = green
-      ctx.drawImage rgbks[1], 0, 0
-    if blue > 0
-      ctx.globalAlpha = blue
-      ctx.drawImage rgbks[2], 0, 0
 
     imgComp = new Image()
     imgComp.src = buff.toDataURL()
@@ -210,6 +139,29 @@ class NativeApp
     @updateSave(dt)
 
     requestAnimationFrame => @update()
+
+  onTouchStart: (evt) ->
+    touches = evt.changedTouches
+    for touch in touches
+      if @touchMouse == null
+        @touchMouse = touch.identifier
+      if @touchMouse == touch.identifier
+        @game.touchDown(touch.clientX, touch.clientY)
+
+  onTouchMove: (evt) ->
+    touches = evt.changedTouches
+    for touch in touches
+      if @touchMouse == touch.identifier
+        @game.touchMove(touch.clientX, touch.clientY)
+
+  onTouchEnd: (evt) ->
+    touches = evt.changedTouches
+    for touch in touches
+      if @touchMouse == touch.identifier
+        @game.touchUp(touch.clientX, touch.clientY)
+        @touchMouse = null
+    if evt.touches.length == 0
+      @touchMouse = null
 
   onMouseDown: (evt) ->
     @game.touchDown(evt.clientX, evt.clientY)

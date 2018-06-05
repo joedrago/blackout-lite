@@ -220,10 +220,12 @@ class Game
     @checkZones(x, y)
 
   touchMove: (x, y) ->
+    # @log("touchMove #{x},#{y}")
     if @blackout != null
       @hand.move(x, y)
 
   touchUp: (x, y) ->
+    # @log("touchUp #{x},#{y}")
     if @blackout != null
       @hand.up(x, y)
 
