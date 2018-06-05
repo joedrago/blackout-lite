@@ -1,14 +1,16 @@
 <html>
 <head>
     <link rel="manifest" href="manifest.json">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, user-scalable=0">
     <title>Blackout</title>
     <style type="text/css">
-        body {
+        html, body {
             margin: 0;
             padding: 0;
+            overflow: auto;
+        }
+        body {
             border: none;
-            overflow: hidden;
             background-color: #000000;
         }
         canvas {
@@ -19,7 +21,12 @@
         }
     </style>
 </head>
-<body>
+<script>
+function BlockMove(event) {
+    event.preventDefault();
+}
+</script>
+<body ontouchmove="BlockMove(event)">
     <canvas id="screen" width="100%" height="100%"></canvas>
     <script src="index.js"></script>
 </body>
