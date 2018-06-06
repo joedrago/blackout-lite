@@ -17,6 +17,7 @@ class NativeApp
   constructor: (@screen, @width, @height) ->
     @tintedTextureCache = []
     @lastTime = new Date().getTime()
+    @lastInteractTime = new Date().getTime()
     @heardOneTouch = false
     @touchMouse = null
     window.addEventListener 'mousedown',  @onMouseDown.bind(this), false
@@ -123,8 +124,23 @@ class NativeApp
     @context.restore()
 
   update: ->
+    requestAnimationFrame => @update()
+
     now = new Date().getTime()
     dt = now - @lastTime
+
+    timeSinceInteract = now - @lastInteractTime
+    if timeSinceInteract > 5000
+      goalFPS = 5 # calm down, nobody is doing anything for 5 seconds
+    else
+      goalFPS = 200 # as fast as possible
+    if @lastGoalFPS != goalFPS
+      console.log "switching to #{goalFPS} FPS"
+      @lastGoalFPS = goalFPS
+
+    fpsInterval = 1000 / goalFPS
+    if dt < fpsInterval
+      return
     @lastTime = now
 
     @context.clearRect(0, 0, @width, @height)
@@ -139,9 +155,8 @@ class NativeApp
 
     @updateSave(dt)
 
-    requestAnimationFrame => @update()
-
   onTouchStart: (evt) ->
+    @lastInteractTime = new Date().getTime()
     @heardOneTouch = true
     touches = evt.changedTouches
     for touch in touches
@@ -151,13 +166,14 @@ class NativeApp
         @game.touchDown(touch.clientX, touch.clientY)
 
   onTouchMove: (evt) ->
-    evt.preventDefault()
+    @lastInteractTime = new Date().getTime()
     touches = evt.changedTouches
     for touch in touches
       if @touchMouse == touch.identifier
         @game.touchMove(touch.clientX, touch.clientY)
 
   onTouchEnd: (evt) ->
+    @lastInteractTime = new Date().getTime()
     touches = evt.changedTouches
     for touch in touches
       if @touchMouse == touch.identifier
@@ -169,16 +185,19 @@ class NativeApp
   onMouseDown: (evt) ->
     if @heardOneTouch
       return
+    @lastInteractTime = new Date().getTime()
     @game.touchDown(evt.clientX, evt.clientY)
 
   onMouseMove: (evt) ->
     if @heardOneTouch
       return
+    @lastInteractTime = new Date().getTime()
     @game.touchMove(evt.clientX, evt.clientY)
 
   onMouseUp: (evt) ->
     if @heardOneTouch
       return
+    @lastInteractTime = new Date().getTime()
     @game.touchUp(evt.clientX, evt.clientY)
 
 screen = document.getElementById 'screen'
