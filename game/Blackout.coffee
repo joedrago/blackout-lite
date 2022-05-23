@@ -411,6 +411,10 @@ class Blackout
 
   addAI: ->
     loop
+      if window.location.hash? and window.location.hash.match('chaos')
+        # All Luigis
+        character = aiCharacterList[1]
+        break
       character = randomCharacter()
       if not @namePresent(character.name)
         break
